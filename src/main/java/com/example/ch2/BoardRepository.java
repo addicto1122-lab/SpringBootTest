@@ -1,13 +1,45 @@
 package com.example.ch2;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 //public interface BoardRepository extends CrudRepository<Board, Long> {
 public interface BoardRepository extends JpaRepository<Board, Long> {
-//    //JPA는 메서드 이름에 특정 규칙 적용.
+    Page<Board> findByTitleContaining(
+            String Keyword,
+            Pageable pageable
+    );
+
+    Page<Board> findByContentContaining(
+            String keyword,
+            Pageable pageable
+    );
+
+    Page<Board> findByTitleContainingOrContentContaining(
+            String title,
+            String content,
+            Pageable pageable
+    );
+
+    Page<Board> findByUser_Id(Long userId, Pageable pageable);
+
+
+    @Query("""
+        SELECT b.user.id AS userId,
+               COUNT(b) AS postCount,
+               SUM(b.viewCnt) AS totalViews,
+               AVG(b.viewCnt) AS averageViews
+        FROM Board b
+        GROUP BY b.user.id
+        ORDER BY b.user.id
+        """)
+    List<WriterStats> findWriterStats();
+    //    //JPA는 메서드 이름에 특정 규칙 적용.
 //    //메서드 이름에 따라 자동으로 쿼리 작성 가능
 //
 //    // SELECT * FROM board WHERE writer=?

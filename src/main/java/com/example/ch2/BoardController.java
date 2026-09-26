@@ -1,12 +1,10 @@
 package com.example.ch2;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,9 +16,18 @@ public class BoardController {
 
     // 목록 : Get / board/list
     @GetMapping("/list")
-    public void getList(Model model){
-        List<Board> list = boardService.getList();
+    public void getList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "title") String type,
+            @RequestParam(defaultValue = "") String keyword,
+            Model model
+    ){
+        Page<Board> list =
+                boardService.getList(page, type, keyword);
+
         model.addAttribute("list", list);
+        model.addAttribute("type", type);
+        model.addAttribute("keyword", keyword);
     }
 
     // 읽기 : Get /board/read?bno=
@@ -59,5 +66,26 @@ public class BoardController {
     public String modify(Board board){
         boardService.modify(board);
         return "redirect:/board/list";
+    }
+
+    @GetMapping("/writer")
+    public String writer(
+            long userId,
+            @RequestParam(defaultValue = "0") int page,
+            Model model
+    ){
+        Page<Board> list = boardService.getListByUser(userId, page);
+
+        model.addAttribute("list", list);
+        model.addAttribute("userId", userId);
+
+        return "board/writer";
+    }
+
+    // 작성자별 게시글 통계
+    @GetMapping("/stats")
+    public void stats(Model model){
+        List<WriterStats> stats = boardService.getWriterStats();
+        model.addAttribute("stats", stats);
     }
 }

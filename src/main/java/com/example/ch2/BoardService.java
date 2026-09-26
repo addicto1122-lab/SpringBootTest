@@ -1,7 +1,11 @@
 package com.example.ch2;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -9,11 +13,42 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
-    private BoardRepository repository;
 
-    // 전체 게시물 조회
-    public List<Board> getList(){
-        return boardRepository.findAll();
+    // 게시물 조회
+    public Page<Board> getList(int page, String type, String keyword){
+
+        Pageable pageable = PageRequest.of(
+                page,
+                10,
+                Sort.by("bno").descending()
+        );
+
+        // 검색어가 없으면 전체 목록
+        if(keyword == null || keyword.isBlank()){
+            return boardRepository.findAll(pageable);
+        }
+
+        if(type.equals("title")){
+            return boardRepository.findByTitleContaining(
+                    keyword,
+                    pageable
+            );
+        }
+
+        if(type.equals("content")){
+            return boardRepository.findByContentContaining(
+                    keyword,
+                    pageable
+            );
+        }
+
+        // 제목 + 내용
+        return boardRepository
+                .findByTitleContainingOrContentContaining(
+                        keyword,
+                        keyword,
+                        pageable
+                );
     }
 
     // 게시물 저장
@@ -23,7 +58,13 @@ public class BoardService {
 
     // 게시물 상세보기 (없으면 null반환)
     public Board read(Long bno){
-        return boardRepository.findById(bno).orElse(null);
+        Board board =  boardRepository.findById(bno).orElse(null);
+
+        if(board == null){
+            return null;
+        }
+        board.setViewCnt(board.getViewCnt() + 1);
+        return boardRepository.save(board);
     }
 
     // 게시물 수정
@@ -46,5 +87,22 @@ public class BoardService {
         if(board != null) {
             boardRepository.deleteById(bno);
         }
+    }
+
+    public Page<Board> getListByUser(Long userId, int page){
+        Pageable pageable = PageRequest.of(
+                page,
+                10,
+                Sort.by("bno").descending()
+        );
+        return boardRepository.findByUser_Id(
+                userId,
+                pageable
+        );
+    }
+
+    // 작성자별 통계
+    public List<WriterStats> getWriterStats(){
+        return boardRepository.findWriterStats();
     }
 }

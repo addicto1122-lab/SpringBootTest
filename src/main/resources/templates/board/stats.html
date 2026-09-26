@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시판 통계</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Noto Sans KR", sans-serif;
+        }
+
+        body {
+            background-color: white;
+        }
+
+        a {
+            text-decoration: none;
+            color: black;
+        }
+
+        .stats-container {
+            width: 60%;
+            margin: 40px auto;
+        }
+
+        .stats-header {
+            width: 100%;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            background-color: rgb(253, 253, 250);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .stats-sub {
+            margin-top: 6px;
+            color: gray;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-top: 2px solid rgb(39, 39, 39);
+        }
+
+        tr:nth-child(even) {
+            background-color: #f0f0f070;
+        }
+
+        th,
+        td {
+            text-align: center;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        td {
+            color: rgb(53, 53, 53);
+        }
+
+        .writer a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-list {
+            background-color: rgb(236, 236, 236);
+            border: none;
+            color: black;
+            padding: 8px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn-list:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="stats-container">
+
+    <div class="stats-header">
+
+        <div>
+            <div class="stats-title">
+                작성자별 게시판 통계
+            </div>
+
+            <div class="stats-sub">
+                게시글 수와 조회수 통계
+            </div>
+        </div>
+
+        <button class="btn-list"
+                onclick="location.href='/board/list'">
+            <i class="fa fa-list"></i>
+            전체 목록
+        </button>
+
+    </div>
+
+
+    <table>
+
+        <tr>
+            <th>작성자</th>
+            <th>게시글 수</th>
+            <th>총 조회수</th>
+            <th>평균 조회수</th>
+        </tr>
+
+        <tr th:each="stat : ${stats}">
+
+            <td class="writer">
+                <a th:href="@{/board/writer(userId=${stat.userId})}"
+                   th:text="${stat.userId}">
+                </a>
+            </td>
+
+            <td th:text="${stat.postCount}"></td>
+
+            <td th:text="${stat.totalViews}"></td>
+
+            <td th:text="${#numbers.formatDecimal(
+                    stat.averageViews,
+                    1,
+                    1
+                )}">
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+</body>
+</html>

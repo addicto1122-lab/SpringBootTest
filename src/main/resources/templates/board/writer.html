@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>작성자 게시글</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Noto Sans KR", sans-serif;
+        }
+
+        body {
+            background-color: #fff;
+        }
+
+        a {
+            text-decoration: none;
+            color: black;
+        }
+
+        .board-container {
+            width: 60%;
+            min-height: 900px;
+            margin: 40px auto;
+        }
+
+        .writer-header {
+            width: 100%;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            background-color: rgb(253, 253, 250);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .writer-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .writer-sub {
+            margin-top: 6px;
+            font-size: 14px;
+            color: gray;
+        }
+
+        .btn-list {
+            background-color: rgb(236, 236, 236);
+            border: none;
+            color: black;
+            padding: 8px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn-list:hover {
+            text-decoration: underline;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            border-top: 2px solid rgb(39, 39, 39);
+        }
+
+        tr:nth-child(even) {
+            background-color: #f0f0f070;
+        }
+
+        th,
+        td {
+            text-align: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        td {
+            color: rgb(53, 53, 53);
+        }
+
+        .no {
+            width: 120px;
+        }
+
+        .title {
+            width: 50%;
+        }
+
+        .writer {
+            width: 150px;
+        }
+
+        .viewcnt {
+            width: 120px;
+        }
+
+        td.title {
+            text-align: left;
+        }
+
+        td.writer {
+            text-align: left;
+        }
+
+        td.viewcnt {
+            text-align: right;
+        }
+
+        td.title a:hover {
+            text-decoration: underline;
+        }
+
+        .paging-container {
+            width: 100%;
+            height: 70px;
+            display: flex;
+            margin-top: 40px;
+        }
+
+        .paging {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .page {
+            color: black;
+            padding: 6px 9px;
+            margin-right: 8px;
+        }
+
+        .page:hover {
+            background-color: rgb(240, 240, 240);
+            border-radius: 5px;
+        }
+
+        .paging-active {
+            background-color: rgb(216, 216, 216);
+            border-radius: 5px;
+            color: rgb(24, 24, 24);
+        }
+
+        .empty-message {
+            padding: 60px 0;
+            text-align: center;
+            color: gray;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="board-container">
+
+    <!-- 작성자 정보 -->
+    <div class="writer-header">
+
+        <div>
+            <div class="writer-title"
+                 th:text="|${userId}번 작성자의 게시글|">
+                작성자 게시글
+            </div>
+
+            <div class="writer-sub"
+                 th:text="|총 ${list.totalElements}개의 게시글|">
+                총 게시글 수
+            </div>
+        </div>
+
+        <button class="btn-list"
+                onclick="location.href='/board/list'">
+            <i class="fa fa-list"></i>
+            전체 목록
+        </button>
+
+    </div>
+
+
+    <!-- 게시글 목록 -->
+    <table>
+
+        <tr>
+            <th class="no">번호</th>
+            <th class="title">제목</th>
+            <th class="writer">작성자</th>
+            <th class="viewcnt">조회수</th>
+        </tr>
+
+        <tr th:each="board : ${list}">
+
+            <td class="no"
+                th:text="${board.bno}">
+            </td>
+
+            <td class="title">
+                <a th:href="@{/board/read(bno=${board.bno})}"
+                   th:text="${board.title}">
+                </a>
+            </td>
+
+            <td class="writer"
+                th:text="${board.user.id}">
+            </td>
+
+            <td class="viewcnt"
+                th:text="${board.viewCnt}">
+            </td>
+
+        </tr>
+
+    </table>
+
+
+    <!-- 게시글 없을 때 -->
+    <div class="empty-message"
+         th:if="${list.totalElements == 0}">
+        작성한 게시글이 없습니다.
+    </div>
+
+
+    <!-- 페이징 -->
+    <div class="paging-container"
+         th:if="${list.totalPages > 0}">
+
+        <div class="paging">
+
+            <!-- 이전 -->
+            <a class="page"
+               th:if="${!list.first}"
+               th:href="@{/board/writer(
+                    userId=${userId},
+                    page=${list.number - 1}
+               )}">
+                이전
+            </a>
+
+
+            <!-- 페이지 번호 -->
+            <a class="page"
+               th:each="i : ${#numbers.sequence(0, list.totalPages - 1)}"
+               th:href="@{/board/writer(
+                    userId=${userId},
+                    page=${i}
+               )}"
+               th:text="${i + 1}"
+               th:classappend="${i == list.number} ? ' paging-active' : ''">
+            </a>
+
+
+            <!-- 다음 -->
+            <a class="page"
+               th:if="${!list.last}"
+               th:href="@{/board/writer(
+                    userId=${userId},
+                    page=${list.number + 1}
+               )}">
+                다음
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
